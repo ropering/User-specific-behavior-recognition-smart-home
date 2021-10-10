@@ -1,39 +1,20 @@
 # ignore warnings
 import warnings
-
+warnings.filterwarnings(action='ignore')
 import cv2
 import numpy as np
-
-warnings.filterwarnings(action='ignore')
-# from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-# from django.views.decorators.http import require_POST # 파일전송
-# from django.views.decorators.csrf import csrf_exempt # 파일전송
-# from .. import FileManager as fm
-import sys
-# from .main import test
 from . import test, FingerCounter, train
 # sys.path.append(r"C:\\_workspace\\_python\\2021-3Q\\ai_server\\iot\\main") # Adds higher directory to python modules path.
-# from main import test
-# from main import train
-# from main import FingerCounter
-# video upload
-# https://ibit.ly/D9uW
 from .forms import Video_form
-# from .models import Video
-import glob
-# remove files
-import os
-# CSRF verification failed. Request aborted
-from django.views.decorators.csrf import csrf_exempt
-# from django.views.decorators.csrf import csrf_protect
+import glob # find file name
+import os # remove files
+from django.views.decorators.csrf import csrf_exempt # CSRF verification failed. Request aborted
 # video streaming
 import socketio
 import base64
 # HTTP Library for Python
 import requests
-
-import time
 
 
 # 얼굴인식 객체 생성
@@ -47,106 +28,75 @@ iotServer_url = 'http://192.168.30.29:3000'
 
 @sio.on('liveStream') # 'liveStream'이라고 오는 event message를 수신한다
 def message(data):
-    # print('I received a message')
-        # decodeit = open('streaming.jpg', 'wb')
-        # decodeit.write(base64.b64decode((buffer)))
-        # print('사진 저장')
-        # decodeit.close()
-        # 얼굴 인식
-        global isa
-        if isa == False:
-            isa = True
-            # try:
-            #     buffer = data['buffer'] # base64 타입으로 변환된 이미지
-            # except TypeError:
-            #     print("스트리밍 오류")
-            # else:
-            # # 사진 저장
-            #     with open('streaming.jpg', 'wb') as f:
-            #         f.write(base64.b64decode(buffer))
-            #         f.flush()
-            #     print("이미지 저장 완료")
-            buffer = data['buffer']
-            # print(f"buffer is {buffer}")
-            decoded = base64.b64decode(buffer)
-            # print(f"decoded is {decoded}")
-            npimg = np.fromstring(decoded, dtype=np.uint8)
-            # print(npimg)
-            # print(type(npimg))
-            # print(f"npimg is {npimg}")
-            global img
-            # if not None:
+    global isa
+    if isa == False:
+        isa = True
+        # try:
+        #     buffer = data['buffer'] # base64 타입으로 변환된 이미지
+        # except TypeError:
+        #     print("스트리밍 오류")
+        # else:
+        # # 사진 저장
+        #     with open('streaming.jpg', 'wb') as f:
+        #         f.write(base64.b64decode(buffer))
+        #         f.flush()
+        #     print("이미지 저장 완료")
+        buffer = data['buffer']
+        decoded = base64.b64decode(buffer)
+        npimg = np.fromstring(decoded, dtype=np.uint8)
+        # (-215:Assertionfailed) !buf.empty() in function 'cv::imdecode_'에러 처리
+        try:
             img = cv2.imdecode(npimg, 1) # imdecode : Reads an image from a buffer in memory
-            # img 변수의 자료형이 numpy 배열 자료형이라면 진행
-            if isinstance(img, np.ndarray):
-                # print(img.shape)
-                # print(type(img))
-                                         # imread : Loads an image from a file
-            # print(img)
-            # while True:
-            # cv2.imshow('img', img)
-            # print(f"img is {img} \n type is {type(img)}")
-
-                face_result = t.start_test(img)
-                finger_result = FingerCounter.start_fingerRecognition(img)
-
-
-
-                if face_result and finger_result:
-                    # print("=" * 20)
-                    # print(f"얼굴인식 결과 : {face_result}")
-                    # print(f"행동인식 결과 : {finger_result}")
-                    # 사용자별 행동 요청
-                    global webServer_url
-                    webServer_url += face_result + "/" + finger_result
-                    print(webServer_url)
-                    res = requests.post(webServer_url) # data={'face_result': face_result, 'finger_result': finger_result
-                    webServer_url = "http://192.168.30.27:8080/ajax/FingerSendData/"
-                    user_behavior = None
-                    if res.status_code == 200:
-                        # print("전송 성공 코드: 200")
-                        user_behavior = res.text
-                        # print(f"반환 결과 값: {user_behavior}")
-                    else:
-                        print(f"오류 발생. 오류코드: {res.status_code}")
-
-                    # sio.emit(user_behavior)
-                    # if str(finger_result) == '1':
-                    #     sio.emit('onFinger', finger_result) #{'result': face_result}
-                    #
-                    # if str(finger_result) == '5':
-                    #     sio.emit('offFinger', finger_result) #{'result': face_result}
-
-            isa = False
+        except Exception as e:
+            print(e)
         else:
-            buffer = ""
+            # start face recognition, hehavior recognition
+            face_result = t.start_test(img)
+            finger_result = FingerCounter.start_fingerRecognition(img)
 
-# @sio.on('storeImage')
-# def storeImage():
-#     for i in range(1, 100):
-#         # pass
-#         #
-#         cv2.imwrite(f'faces/training/{i}.jpg', img)
-#         time.sleep(0.5)
+            # if face and behavior is recognized
+            if face_result and finger_result:
+                # request to Web Server
+                global webServer_url
+                webServer_url += face_result + "/" + finger_result
+                print(webServer_url)
+                res = requests.post(webServer_url)
+                # reset URL
+                webServer_url = webServer_url[: webServer_url.find("Data/") + 5]
+                # if res.status_code == 200:
+                #     # print("전송 성공 코드: 200")
+                # else:
+                #     print(f"오류 발생. 오류코드: {res.status_code}")
 
+                # sio.emit(user_behavior)
+                # if str(finger_result) == '1':
+                #     sio.emit('onFinger', finger_result) #{'result': face_result}
+                #
+                # if str(finger_result) == '5':
+                #     sio.emit('offFinger', finger_result) #{'result': face_result}
+            isa = False
+    else:
+        buffer = ""
 
+@sio.on('storeImage')
+def storeImage(data):
+    buffer = data['buffer']
+    decoded = base64.b64decode(buffer)
+    npimg = np.fromstring(decoded, dtype=np.uint8)
+    # (-215:Assertionfailed) !buf.empty() in function 'cv::imdecode_'에러 처리
+    try:
+        img = cv2.imdecode(npimg, 1)  # imdecode : Reads an image from a buffer in memory
+    except Exception as e:
+        print(e)
+    else:
+        cv2.imwrite('')
 
-
-    # @sio.on('liveStream')
-    # def image(data):
-    #     for i in range(1, 100):
-    #         global isa
-    #         if isa == False:
-    #             isa = True
-    #
-    #             buffer = data['buffer']
-    #             decoded = base64.b64decode(buffer)
-    #             npimg = np.fromstring(decoded, dtype=np.uint8)
-    #             img = cv2.imdecode(npimg, 1)
-    #
-    #             cv2.imwrite('faces/training/*.jpg', grayImg)
-
-
+@sio.on('convertToVideo')
+def convertToVideo():
+    for i in range(1, 100):
+        print("이미지 저장")
+        cv2.imwrite(f'faces/training/{i}.jpg', img)
+        time.sleep(0.5)
 
 @sio.event
 def connect():
@@ -200,6 +150,26 @@ def add_face(request, id): # Web Server -> AI Server
         print("학습 실패")
         return HttpResponse(0)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @csrf_exempt
 def get_recognition(request):
     # 영상 저장, 영상을 id 폴더 내로 이동
@@ -227,23 +197,6 @@ def get_recognition(request):
     else:
         print("영상 저장 실패 (POST 방식이 아닙니다)")
         return HttpResponse("영상이 저장되지 않았습니다")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 @csrf_exempt
@@ -302,6 +255,7 @@ def upload(request, id):
     else:
         print("영상 저장 실패 (POST 방식이 아닙니다)")
         return HttpResponse("영상이 저장되지 않았습니다")
+
 
 def face_train(request):
     # t = test.FaceRecognition()

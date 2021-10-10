@@ -183,8 +183,8 @@ def start_train():
             while True:
                 # 학습할 영상 한 프레임씩 가져오기
                 ret, raw_img = cap.read()
-                # 5프레임 마다 전처리 -> 얼굴 정확도 산출
-                if frame_count % 5 == 0 and raw_img is not None:
+                # 프레임 마다 전처리 -> 얼굴 정확도 산출
+                if raw_img is not None: # frame_count % 5 == 0 and
                     # 프레임 전처리
                     h, w, _ = raw_img.shape
                     img = cv2.cvtColor(raw_img, cv2.COLOR_BGR2RGB)
