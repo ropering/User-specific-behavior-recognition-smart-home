@@ -14,7 +14,13 @@ import onnx
 import onnxruntime as ort
 from onnx_tf.backend import prepare
 import time
+'''
+1. ultra light face detector 사용
+2. face landmarks 검출 
+3. train을 통해 학습 및 저장시킨 모델(.pkl 확장자) 불러오기 
 
+- MFN : Multiple Face Network
+'''
 
 class FaceRecognition(object): # 싱글턴 패턴 적용
     """
@@ -214,89 +220,91 @@ class FaceRecognition(object): # 싱글턴 패턴 적용
                 # '''4'''
                 # 여기부터 카메라
                 # video_capture = cv2.VideoCapture(file_path)
+        while True:
+            # fps = video_capture.get(cv2.CAP_PROP_FPS)
+            # ret, frame = video_capture.read()
 
-                while True:
-                    # fps = video_capture.get(cv2.CAP_PROP_FPS)
-                    # ret, frame = video_capture.read()
+            # frame = cv2.imread(file_path)
 
-                    # frame = cv2.imread(file_path)
+            # preprocess faces
+            h, w, _ = frame.shape
+            img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            img = cv2.resize(img, (640, 480))
+            img_mean = np.array([127, 127, 127])
+            img = (img - img_mean) / 128
+            img = np.transpose(img, [2, 0, 1])
+            img = np.expand_dims(img, axis=0)
+            img = img.astype(np.float32)
 
-                    # preprocess faces
-                    h, w, _ = frame.shape
-                    img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    img = cv2.resize(img, (640, 480))
-                    img_mean = np.array([127, 127, 127])
-                    img = (img - img_mean) / 128
-                    img = np.transpose(img, [2, 0, 1])
-                    img = np.expand_dims(img, axis=0)
-                    img = img.astype(np.float32)
+            # detect faces (img : 캠에서 캡처한 얼굴 <-> 모델과 비교)
+            confidences, boxes = self.ort_session.run(None, {self.input_name: img})
+            boxes, labels, probs = self.predict(w, h, confidences, boxes, 0.7)
 
+            # locate faces
+            # 얼굴 부분만 잘라내서 append to faces
+            # box : 얼굴을 둘러싼 네모 모양
+            faces = []
+            boxes[boxes<0] = 0
+            for i in range(boxes.shape[0]):
+                box = boxes[i, :]
+                x1, y1, x2, y2 = box
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                aligned_face = self.fa.align(frame, gray, dlib.rectangle(left = int(x1), top=int(y1), right=int(x2), bottom=int(y2)))
+                aligned_face = cv2.resize(aligned_face, (112,112))
 
-                    # detect faces (img : 캠에서 캡처한 얼굴 <-> 모델과 비교)
-                    confidences, boxes = self.ort_session.run(None, {self.input_name: img})
-                    boxes, labels, probs = self.predict(w, h, confidences, boxes, 0.7)
+                aligned_face = aligned_face - 127.5
+                aligned_face = aligned_face * 0.0078125
 
-                    # locate faces
-                    faces = []
-                    boxes[boxes<0] = 0
-                    for i in range(boxes.shape[0]):
-                        box = boxes[i, :]
-                        x1, y1, x2, y2 = box
-                        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                        aligned_face = self.fa.align(frame, gray, dlib.rectangle(left = int(x1), top=int(y1), right=int(x2), bottom=int(y2)))
-                        aligned_face = cv2.resize(aligned_face, (112,112))
+                faces.append(aligned_face)
 
-                        aligned_face = aligned_face - 127.5
-                        aligned_face = aligned_face * 0.0078125
+            # face embedding : 얼굴로부터 추출한 특징을 나타내는 벡터
+            # 얼굴이 탐지되었다면
+            if len(faces)>0:
+                predictions = []
 
-                        faces.append(aligned_face)
+                faces = np.array(faces)
+                feed_dict = { self.images_placeholder: faces, self.phase_train_placeholder:False }
+                embeds = self.sess.run(self.embeddings, feed_dict=feed_dict)
 
-                    # face embedding : 얼굴로부터 추출한 특징을 나타내는 벡터
-                    if len(faces)>0:
-                        predictions = []
-
-                        faces = np.array(faces)
-                        feed_dict = { self.images_placeholder: faces, self.phase_train_placeholder:False }
-                        embeds = self.sess.run(self.embeddings, feed_dict=feed_dict)
-
-                        # prediciton using distance
-                        for embedding in embeds:
-                            diff = np.subtract(self.saved_embeds, embedding)
-                            dist = np.sum(np.square(diff), 1)
-                            idx = np.argmin(dist)
-                            if dist[idx] < self.threshold:
-                                predictions.append(self.names[idx])
-                            else:
-                                return None
-                                predictions.append("unknown")
-                        # draw
-                        for i in range(boxes.shape[0]):
-                            box = boxes[i, :]
-
-                            text = f"{predictions[i]}"
-
-                            x1, y1, x2, y2 = box
-                            cv2.rectangle(frame, (x1, y1), (x2, y2), (80,18,236), 2)
-                            # Draw a label with a name below the face
-                            cv2.rectangle(frame, (x1, y2 - 20), (x2, y2), (80,18,236), cv2.FILLED)
-                            font = cv2.FONT_HERSHEY_DUPLEX
-                            cv2.putText(frame, text, (x1 + 6, y2 - 6), font, 0.3, (255, 255, 255), 1) # putText 내부에 왜 구현부분이 없지?
-                            # print(f"얼굴인식 완료 : {text}")
-                            cv2.destroyAllWindows()
-                            return str(text)
+                # prediciton using distance
+                # trainin 때 학습시킨 모델과 비교해서 차이를 변수에 저장
+                for embedding in embeds:
+                    diff = np.subtract(self.saved_embeds, embedding)
+                    dist = np.sum(np.square(diff), 1)
+                    idx = np.argmin(dist)
+                    if dist[idx] < self.threshold:
+                        predictions.append(self.names[idx])
                     else:
-                        # print("no face")
                         return None
+                        # predictions.append("unknown")
+                # draw
+                for i in range(boxes.shape[0]):
+                    box = boxes[i, :]
 
-                    # cv2.imshow('Video', frame)
+                    text = f"{predictions[i]}"
 
-                    # Hit 'q' on the keyboard to quit!
-                    if cv2.waitKey(1) & 0xFF == ord('q'):
-                        break
+                    x1, y1, x2, y2 = box
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (80,18,236), 2)
+                    # Draw a label with a name below the face
+                    cv2.rectangle(frame, (x1, y2 - 20), (x2, y2), (80,18,236), cv2.FILLED)
+                    font = cv2.FONT_HERSHEY_DUPLEX
+                    cv2.putText(frame, text, (x1 + 6, y2 - 6), font, 0.3, (255, 255, 255), 1) # putText 내부에 왜 구현부분이 없지?
+                    # print(f"얼굴인식 완료 : {text}")
+                    cv2.destroyAllWindows()
+                    return str(text)
+            else:
+                # print("no face")
+                return None
 
-                # Release handle to the webcam
-                # video_capture.release()
-                # cv2.destroyAllWindows()
+            # cv2.imshow('Video', frame)
+
+            # Hit 'q' on the keyboard to quit!
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        # Release handle to the webcam
+        # video_capture.release()
+        # cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     pass

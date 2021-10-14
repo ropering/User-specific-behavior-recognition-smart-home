@@ -15,6 +15,7 @@ import onnxruntime as ort
 from onnx_tf.backend import prepare
 import shutil # 파일 이동 라이브러리
 
+
 def create_folder(path: str, id: str): # 자료형 변환
     try:
         os.mkdir(path + id)
@@ -24,6 +25,7 @@ def create_folder(path: str, id: str): # 자료형 변환
     except Exception as e:
         print("오류 발생 \n" + str(e) + "\n")
         return "오류 발생" + str(e)
+
 
 def move_file(file : str, id : str):
     """ C드라이브에 위치한 파일을 -> id 폴더 내로 이동 """
@@ -52,6 +54,8 @@ def move_file(file : str, id : str):
 #         if cv2.waitKey(1) & 0xFF == 'q':
 #             break
 #     # https://ibit.ly/iDsr
+# 주어진 두 개의 모서리 점으로부터 사각형의 넓이 계산
+
 
 def area_of(left_top, right_bottom): # 사각형 영역 계산
     """
@@ -65,7 +69,9 @@ def area_of(left_top, right_bottom): # 사각형 영역 계산
     hw = np.clip(right_bottom - left_top, 0.0, None)
     return hw[..., 0] * hw[..., 1]
 
-def iou_of(boxes0, boxes1, eps=1e-5): # 특정한 데이터셋에서 object detector의 정확도를 측정하기 위해서 사용된다
+
+# 특정한 데이터셋에서 object detector의 정확도를 측정하기 위해서 사용된다
+def iou_of(boxes0, boxes1, eps=1e-5):
     """
     Return intersection-over-union (Jaccard index) of boxes.
     Args:
@@ -83,6 +89,8 @@ def iou_of(boxes0, boxes1, eps=1e-5): # 특정한 데이터셋에서 object dete
     area1 = area_of(boxes1[..., :2], boxes1[..., 2:])
     return overlap_area / (area0 + area1 - overlap_area + eps) # 교집합 영역 넓이 / 합집합 영역 넓이
 
+
+# 임계값보다 큰 iou가 있는 boxes를 걸러내기 위해 hard non-maximum-suppression을 수행
 def hard_nms(box_scores, iou_threshold, top_k=-1, candidate_size=200):
     """
     Perform hard non-maximum-supression to filter out boxes with iou greater
@@ -116,6 +124,8 @@ def hard_nms(box_scores, iou_threshold, top_k=-1, candidate_size=200):
 
     return box_scores[picked, :]
 
+
+# Select boxes that contain human faces
 def predict(width, height, confidences, boxes, prob_threshold, iou_threshold=0.5, top_k=-1):
     """
     Select boxes that contain human faces
@@ -158,7 +168,12 @@ def predict(width, height, confidences, boxes, prob_threshold, iou_threshold=0.5
     picked_box_probs[:, 3] *= height
     return picked_box_probs[:, :4].astype(np.int32), np.array(picked_labels), picked_box_probs[:, 4]
 
+
 def start_train():
+    '''
+    face detect
+    얼굴을 찾아내는 것 : ultra light face detector 사용 (onnx)
+    '''
     onnx_path = '../models/ultra_light/ultra_light_models/ultra_light_640.onnx'
     onnx_model = onnx.load(onnx_path)
     predictor = prepare(onnx_model)
@@ -204,7 +219,7 @@ def start_train():
                         x1, y1, x2, y2 = boxes[0,:]
                         gray = cv2.cvtColor(raw_img, cv2.COLOR_BGR2GRAY)
                         aligned_face = fa.align(raw_img, gray, dlib.rectangle(left=int(x1), top=int(y1), right=int(x2), bottom=int(y2)))
-                        aligned_face = cv2.resize(aligned_face, (112,112))
+                        aligned_face = cv2.resize(aligned_face, (112, 112))
                         # 해당 경로에 전처리된 이미지 저장
                         cv2.imwrite(f'./faces/tmp/{label}_{frame_count}.jpg', aligned_face)
                         # f'../faces/tmp/{label}_{frame_count}.jpg'
@@ -216,7 +231,7 @@ def start_train():
                 frame_count += 1
                 if frame_count == cap.get(cv2.CAP_PROP_FRAME_COUNT):
                     break
-
+    # face training
     with tf.Graph().as_default():
         with tf.Session() as sess:
             print("loading checkpoint ...")
@@ -226,9 +241,11 @@ def start_train():
             images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
             embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
             phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train:0")
-
+            # images : 얼굴만 들어있는 이미지 목록
             feed_dict = {images_placeholder: images, phase_train_placeholder:False }
+            # Tensorflow 연산 수행
             embeds = sess.run(embeddings, feed_dict=feed_dict)
+            # 연산 결과 덮어씌우기
             with open("embeddings/embeddings.pkl", "wb") as f:
                 pickle.dump((embeds, names), f)
             print("얼굴 학습 Done!")

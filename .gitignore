@@ -1,4 +1,6 @@
 
 *.jpg
+*.jpeg
+*.png
 *.mp4
 *.pyc

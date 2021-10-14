@@ -16,15 +16,21 @@ import base64
 # HTTP Library for Python
 import requests
 
+import re
+
 
 # 얼굴인식 객체 생성
 t = test.FaceRecognition()
 sio = socketio.Client()
+# variable to store images
+count = 1
 
 isa = False
+images = [] # store images for train
+size = ()
 webServer_url = "http://192.168.30.27:8080/ajax/FingerSendData/"
-iotServer_url = 'http://192.168.30.29:3000'
-
+iotServer_url = "http://211.185.104.2:8000"
+# 'http://192.168.30.29:3000'
 
 @sio.on('liveStream') # 'liveStream'이라고 오는 event message를 수신한다
 def message(data):
@@ -48,7 +54,7 @@ def message(data):
         try:
             img = cv2.imdecode(npimg, 1) # imdecode : Reads an image from a buffer in memory
         except Exception as e:
-            print(e)
+            print(f"오류 {e}")
         else:
             # start face recognition, hehavior recognition
             face_result = t.start_test(img)
@@ -78,8 +84,10 @@ def message(data):
     else:
         buffer = ""
 
+
 @sio.on('storeImage')
-def storeImage(data):
+def store_image(data):
+    print("이미지 저장 시작")
     buffer = data['buffer']
     decoded = base64.b64decode(buffer)
     npimg = np.fromstring(decoded, dtype=np.uint8)
@@ -87,17 +95,81 @@ def storeImage(data):
     try:
         img = cv2.imdecode(npimg, 1)  # imdecode : Reads an image from a buffer in memory
     except Exception as e:
-        print(e)
+        print(f"오류 {e}")
     else:
-        cv2.imwrite('')
+        images.append(img)
+        print("이미지 저장 완료")
+    # print("이미지 저장 시작")
+    # id = ""
+    # id = id.zfill(4) # 4자리 숫자로 채움 나머지는 0
+    # # id값을 받을 수 있다면 파일명을 "id_x.jpg"이렇게 저장가능 -> 이미지를 삭제할 필요가 없어진다
+    # buffer = data['buffer']
+    # decoded = base64.b64decode(buffer)
+    # npimg = np.fromstring(decoded, dtype=np.uint8)
+    # # (-215:Assertionfailed) !buf.empty() in function 'cv::imdecode_'에러 처리
+    # try:
+    #     img = cv2.imdecode(npimg, 1)  # imdecode : Reads an image from a buffer in memory
+    # except Exception as e:
+    #     print(e)
+    # else:
+    #     cv2.imwrite(f'./faces/training/{id}_{count}', img)
+    #     print("이미지 저장 완료")
+
 
 @sio.on('convertToVideo')
-def convertToVideo():
-    for i in range(1, 100):
-        print("이미지 저장")
-        cv2.imwrite(f'faces/training/{i}.jpg', img)
-        time.sleep(0.5)
+def convert_to_video(data):
+    print("영상 저장 시작")
+    # global images
+    # global size
+    id = data['id']
+    print(id)
+    # 학습완료를 알리기 위해 1 보내기 또는 0
+    # train.create_folder(r"C:\_workspace\_python\2021-3Q\ai_server\iot\faces\training/", id)
+    # path_out = f"faces/training/{id}"
+    # fps = 30
+    # frame_array = []
+    # 
+    # for img in images:
+    #     img = cv2.imread(img)
+    #     height, width, layers = img.shape
+    #     size = (width, height)
+    #     frame_array.append(img)
+    # 
+    #     print(f"\n\n\n\n{size}")
+    # out = cv2.VideoWriter(path_out, cv2.VideoWriter_fourcc(*'DIVX'), fps, size)
+    # for i in range(len(frame_array)):
+    #     out.write(frame_array[i])
+    # out.release()
+    # print("영상 저장 완료")
+    # images = []
 
+
+    # print("영상 저장 시작")
+    # global size
+    # id = ""
+    # path = "faces/training/"
+    # paths = [os.path.join(path, i) for i in os.listdir("iot/faces/training") if re.search(f"{id}_\d", i)] # bono_\d\d\d\d.jpg"
+    #
+    # train.create_folder(r"C:\_workspace\_python\2021-3Q\ai_server\iot\faces\training/", id)
+    # path_out = f"faces/training/{id}"
+    # fps = 30
+    # frame_array = []
+    #
+    # for path in paths:
+    #     img = cv2.imread(path)
+    #     height, width, layers = img.shape
+    #     size = (width, height)
+    #     frame_array.append(img)
+    # out = cv2.VideoWriter(path_out, cv2.VideoWriter_fourcc(*'DIVX'), fps, size)
+    # for i in range(len(frame_array)):
+    #     out.write(frame_array[i])
+    # out.release()
+    # print("영상 저장 완료")
+
+    # print("학습 시작")
+    # train.start_train()
+        
+                
 @sio.event
 def connect():
     print("I'm connected! \n")
@@ -115,6 +187,8 @@ except Exception as e: # Connection refused 처리
     print(f"에러: {e}")
 else:
     sio.emit('start-stream')
+    sio.emit('storeImage')
+    sio.emit('convertToVideo')
     print("스트리밍 요청완료")
 
 
@@ -226,7 +300,7 @@ def recognition_face(request):
     video_name = glob.glob('faces/training/*.mp4')[0].split('\\')[-1]  # training 폴더에 있는 mp4 파일명
     t = test.FaceRecognition()
     result = t.start_test(f"faces/training/{video_name}")
-    # result = t.start_test("./hello_level.jpeg")
+    # result = t.start_test("./hello_level.jpg")
             # os.remove(f"faces/training/{video_name}")# 인식에 활용한 영상 파일 삭제
     return HttpResponse(result)# 0 입력 시 카메라 캠 사용
     # else:
