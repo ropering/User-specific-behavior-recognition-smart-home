@@ -19,8 +19,7 @@ import requests
 import re
 
 
-# 얼굴인식 객체 생성
-t = test.FaceRecognition()
+
 sio = socketio.Client()
 # variable to store images
 count = 1
@@ -29,7 +28,7 @@ isa = False
 images = [] # store images for train
 size = ()
 webServer_url = "http://192.168.30.27:8080/ajax/FingerSendData/"
-iotServer_url = "http://211.185.104.2:8000"
+iotServer_url = "http://192.168.30.29:3000"
 # 'http://192.168.30.29:3000'
 
 @sio.on('liveStream') # 'liveStream'이라고 오는 event message를 수신한다
@@ -37,6 +36,8 @@ def message(data):
     global isa
     if isa == False:
         isa = True
+        # 얼굴인식 객체 생성
+        t = test.FaceRecognition()
         # try:
         #     buffer = data['buffer'] # base64 타입으로 변환된 이미지
         # except TypeError:
@@ -50,6 +51,7 @@ def message(data):
         buffer = data['buffer']
         decoded = base64.b64decode(buffer)
         npimg = np.fromstring(decoded, dtype=np.uint8)
+        # sio.emit('storeImage')
         # (-215:Assertionfailed) !buf.empty() in function 'cv::imdecode_'에러 처리
         try:
             img = cv2.imdecode(npimg, 1) # imdecode : Reads an image from a buffer in memory
@@ -59,6 +61,9 @@ def message(data):
             # start face recognition, hehavior recognition
             face_result = t.start_test(img)
             finger_result = FingerCounter.start_fingerRecognition(img)
+            # print("="*10)
+            # print(face_result)
+            # print(finger_result)
 
             # if face and behavior is recognized
             if face_result and finger_result:
@@ -66,7 +71,10 @@ def message(data):
                 global webServer_url
                 webServer_url += face_result + "/" + finger_result
                 print(webServer_url)
-                res = requests.post(webServer_url)
+                try:
+                    res = requests.post(webServer_url)
+                except Exception as e:
+                    print(f"ERROR: {e}")
                 # reset URL
                 webServer_url = webServer_url[: webServer_url.find("Data/") + 5]
                 # if res.status_code == 200:
@@ -80,12 +88,13 @@ def message(data):
                 #
                 # if str(finger_result) == '5':
                 #     sio.emit('offFinger', finger_result) #{'result': face_result}
+        finally:
             isa = False
     else:
         buffer = ""
 
 
-@sio.on('storeImage')
+@sio.on('sendImage')
 def store_image(data):
     print("이미지 저장 시작")
     buffer = data['buffer']
@@ -188,7 +197,7 @@ except Exception as e: # Connection refused 처리
 else:
     sio.emit('start-stream')
     sio.emit('storeImage')
-    sio.emit('convertToVideo')
+    # sio.emit('convertToVideo')
     print("스트리밍 요청완료")
 
 
