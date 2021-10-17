@@ -17,7 +17,7 @@ import base64
 import requests
 
 import re
-
+import time
 
 
 sio = socketio.Client()
@@ -28,9 +28,9 @@ isa = False
 images = [] # store images for train
 size = ()
 webServer_url = "http://192.168.30.27:8080/ajax/FingerSendData/"
-iotServer_url = "http://192.168.30.29:3000"
+iotServer_url = "http://192.168.30.29:3000/"
 # 'http://192.168.30.29:3000'
-
+'''
 @sio.on('liveStream') # 'liveStream'이라고 오는 event message를 수신한다
 def message(data):
     global isa
@@ -55,6 +55,7 @@ def message(data):
         # (-215:Assertionfailed) !buf.empty() in function 'cv::imdecode_'에러 처리
         try:
             img = cv2.imdecode(npimg, 1) # imdecode : Reads an image from a buffer in memory
+            # print(img.shape)
         except Exception as e:
             print(f"오류 {e}")
         else:
@@ -93,21 +94,24 @@ def message(data):
     else:
         buffer = ""
 
+'''
+# @sio.on('sendImage')
+# def store_image(data):
+#     print("이미지 저장 시작")
+#     buffer = data['buffer']
+#     decoded = base64.b64decode(buffer)
+#     npimg = np.fromstring(decoded, dtype=np.uint8)
+#     # (-215:Assertionfailed) !buf.empty() in function 'cv::imdecode_'에러 처리
+#     try:
+#         img = cv2.imdecode(npimg, 1)  # imdecode : Reads an image from a buffer in memory
+#     except Exception as e:
+#         print(f"오류 {e}")
+#     else:
+#         images.append(img)
+#         print("이미지 저장 완료")
+#         print(f"img len : {images}")
 
-@sio.on('sendImage')
-def store_image(data):
-    print("이미지 저장 시작")
-    buffer = data['buffer']
-    decoded = base64.b64decode(buffer)
-    npimg = np.fromstring(decoded, dtype=np.uint8)
-    # (-215:Assertionfailed) !buf.empty() in function 'cv::imdecode_'에러 처리
-    try:
-        img = cv2.imdecode(npimg, 1)  # imdecode : Reads an image from a buffer in memory
-    except Exception as e:
-        print(f"오류 {e}")
-    else:
-        images.append(img)
-        print("이미지 저장 완료")
+
     # print("이미지 저장 시작")
     # id = ""
     # id = id.zfill(4) # 4자리 숫자로 채움 나머지는 0
@@ -125,25 +129,25 @@ def store_image(data):
     #     print("이미지 저장 완료")
 
 
-@sio.on('convertToVideo')
-def convert_to_video(data):
-    print("영상 저장 시작")
-    # global images
-    # global size
-    id = data['id']
-    print(id)
+# @sio.on('convertToVideo')
+# def convert_to_video(data):
+#     print("영상 저장 시작")
+#     # global images
+#     # global size
+#     id = data['id']
+#     print(id)
     # 학습완료를 알리기 위해 1 보내기 또는 0
     # train.create_folder(r"C:\_workspace\_python\2021-3Q\ai_server\iot\faces\training/", id)
     # path_out = f"faces/training/{id}"
     # fps = 30
     # frame_array = []
-    # 
+    #
     # for img in images:
     #     img = cv2.imread(img)
     #     height, width, layers = img.shape
     #     size = (width, height)
     #     frame_array.append(img)
-    # 
+    #
     #     print(f"\n\n\n\n{size}")
     # out = cv2.VideoWriter(path_out, cv2.VideoWriter_fourcc(*'DIVX'), fps, size)
     # for i in range(len(frame_array)):
@@ -177,8 +181,8 @@ def convert_to_video(data):
 
     # print("학습 시작")
     # train.start_train()
-        
-                
+
+
 @sio.event
 def connect():
     print("I'm connected! \n")
@@ -196,42 +200,50 @@ except Exception as e: # Connection refused 처리
     print(f"에러: {e}")
 else:
     sio.emit('start-stream')
-    sio.emit('storeImage')
+    # for _ in range(10):
+    #     print("이미지 요청")
+    #     sio.emit('storeImage')
+    #     time.sleep(0.5)
     # sio.emit('convertToVideo')
-    print("스트리밍 요청완료")
 
 
 # 학습시 upload() 실행 -> face_train() 실행
+
 @csrf_exempt
 def add_face(request, id): # Web Server -> AI Server
+    # request to iot server & save video
+    with requests.post(iotServer_url + "request", stream=True) as r:
+        r.raise_for_status()
+        with open(f'faces/training/{id}.mp4', 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
     # id 폴더 생성
     train.create_folder(r"C:\_workspace\_python\2021-3Q\ai_server\iot\faces\training/", id) # ./iot/faces/training/
     # 영상 저장, 영상을 id 폴더 내로 이동
-    if request.method == "POST":
-        form = Video_form(data=request.POST, files=request.FILES)
-        if form.is_valid():
-            form.save()
-            print("파일 저장 완료")
-            video_name = glob.glob('faces/training/*.mp4')[0].split('\\')[-1]  # training 폴더에 있는 mp4 파일명
-            train.move_file(video_name, id)
-            print("파일 이동 완료")
-            # 학습 시작
-            print("학습 시작")
-            train.start_train()
-        else:
-            print("파일 크기가 50MB가 넘습니다")
-    else:
-        print("영상 저장 실패 (POST 방식이 아닙니다)")
+    form.save()
+    print("파일 저장 완료")
+    video_name = glob.glob('faces/training/*.mp4')[0].split('\\')[-1]  # training 폴더에 있는 mp4 파일명
+    train.move_file(video_name, id)
+    print("파일 이동 완료")
+    # 학습 시작
+    print("학습 시작")
+    # if train.start_train() == 1:
+    #     print("학습 성공")
+    #     return JsonResponse({'state': 1})
+    # else:
+    #     print("학습 실패")
+    #     return HttpResponse({'state': 0})
 
-    print("학습 시작!!")
-    print("="*10)
 
-    if train.start_train() == 1:
-        print("학습 성공")
-        return HttpResponse(1)
-    else:
-        print("학습 실패")
-        return HttpResponse(0)
+
+@csrf_exempt
+def add_face(_, id):
+    with requests.post(iotServer_url + "request", stream=True) as r:
+        r.raise_for_status()
+        with open(f'faces/training/{id}.mp4', 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    return HttpResponse(1)
 
 
 

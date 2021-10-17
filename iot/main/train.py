@@ -54,9 +54,9 @@ def move_file(file : str, id : str):
 #         if cv2.waitKey(1) & 0xFF == 'q':
 #             break
 #     # https://ibit.ly/iDsr
+
+
 # 주어진 두 개의 모서리 점으로부터 사각형의 넓이 계산
-
-
 def area_of(left_top, right_bottom): # 사각형 영역 계산
     """
     Compute the areas of rectangles given two corners.

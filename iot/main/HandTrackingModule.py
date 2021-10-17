@@ -40,10 +40,12 @@ class handDetector():
 
     def findHands(self, img, draw=True):
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        # process() : 전처리 및 모델 추론을 함께 실행합니다
         self.results = self.hands.process(imgRGB)
         # print(f"results = {self.results}") # <class 'mediapipe.python.solution_base.SolutionOutputs'>
         # print(results.multi_hand_landmarks)
 
+        # 손이 인식 된다면
         if self.results.multi_hand_landmarks:
             for handLms in self.results.multi_hand_landmarks:
                 if draw:
