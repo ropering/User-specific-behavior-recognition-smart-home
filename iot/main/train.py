@@ -179,8 +179,10 @@ def start_train():
     predictor = prepare(onnx_model)
     ort_session = ort.InferenceSession(onnx_path)
     input_name = ort_session.get_inputs()[0].name
-
+    # 얼굴의 5개의 landmark를 추론하는 모델을 불러온다
     shape_predictor = dlib.shape_predictor(r'../models/facial_landmarks/shape_predictor_5_face_landmarks.dat')
+    # face alignment : 얼굴 정렬, 얼굴 특징점 검출
+    # detect 모델이 얼굴을 탐지하면 얼굴이 아닌 부분을 제거하고 얼굴 부분만 남도록 하는 것이 align 작업
     fa = face_utils.facealigner.FaceAligner(shape_predictor, desiredFaceWidth=112, desiredLeftEye=(0.3, 0.3))
 
     # 얼굴 인식할 파일 경로

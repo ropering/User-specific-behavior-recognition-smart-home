@@ -263,12 +263,13 @@ class FaceRecognition(object): # 싱글턴 패턴 적용
                 predictions = []
 
                 faces = np.array(faces)
-                feed_dict = { self.images_placeholder: faces, self.phase_train_placeholder:False }
+                feed_dict = {self.images_placeholder: faces, self.phase_train_placeholder: False}
                 embeds = self.sess.run(self.embeddings, feed_dict=feed_dict)
 
                 # prediciton using distance
                 # trainin 때 학습시킨 모델과 비교해서 차이를 변수에 저장
                 for embedding in embeds:
+                    # saved_embeds : 학습시킨 embedding.pkl 파일값
                     diff = np.subtract(self.saved_embeds, embedding)
                     dist = np.sum(np.square(diff), 1)
                     idx = np.argmin(dist)

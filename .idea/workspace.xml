@@ -3,10 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="2012562b-46ee-4c3e-a204-46ee4c503d69" name="Changes" comment=".">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot/main/HandTrackingModule.py" beforeDir="false" afterPath="$PROJECT_DIR$/iot/main/HandTrackingModule.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot/main/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/iot/main/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot/main/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/iot/main/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/iot/main/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/iot/main/train.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot/main/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/iot/main/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -202,7 +200,7 @@
       <workItem from="1634128740936" duration="11336000" />
       <workItem from="1634220346047" duration="23609000" />
       <workItem from="1634395103695" duration="7737000" />
-      <workItem from="1634447760837" duration="11646000" />
+      <workItem from="1634447760837" duration="16848000" />
     </task>
     <servers />
   </component>
