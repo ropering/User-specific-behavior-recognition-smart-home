@@ -19,6 +19,8 @@ import requests
 import re
 import time
 
+from django.shortcuts import redirect
+
 
 sio = socketio.Client()
 # variable to store images
@@ -27,10 +29,9 @@ count = 1
 isa = False
 images = [] # store images for train
 size = ()
-webServer_url = "http://192.168.30.27:8080/ajax/FingerSendData/"
-iotServer_url = "http://192.168.30.29:3000/"
-# 'http://192.168.30.29:3000'
-'''
+webServer_url = "http://172.20.10.14:8080/ajax/FingerSendData/"
+iotServer_url = "http://172.20.10.11:3000/"
+
 @sio.on('liveStream') # 'liveStream'이라고 오는 event message를 수신한다
 def message(data):
     global isa
@@ -62,9 +63,9 @@ def message(data):
             # start face recognition, hehavior recognition
             face_result = t.start_test(img)
             finger_result = FingerCounter.start_fingerRecognition(img)
-            # print("="*10)
-            # print(face_result)
-            # print(finger_result)
+            print("="*10)
+            print(face_result)
+            print(finger_result)
 
             # if face and behavior is recognized
             if face_result and finger_result:
@@ -94,7 +95,7 @@ def message(data):
     else:
         buffer = ""
 
-'''
+
 # @sio.on('sendImage')
 # def store_image(data):
 #     print("이미지 저장 시작")
@@ -200,6 +201,9 @@ except Exception as e: # Connection refused 처리
     print(f"에러: {e}")
 else:
     sio.emit('start-stream')
+
+
+
     # for _ in range(10):
     #     print("이미지 요청")
     #     sio.emit('storeImage')
@@ -209,6 +213,51 @@ else:
 
 # 학습시 upload() 실행 -> face_train() 실행
 
+@csrf_exempt
+def request_face(request, id):
+    # print(f"request method : {request.method}")
+    sio.disconnect()
+
+    if request.method == "POST":
+        form = Video_form(data=200, files=request.FILES)
+        # 영상 저장 → 영상 저장할 폴더 생성 → 영상 이동 → 학습 시작
+        form.save()
+        print("영상 저장 완료")
+        train.create_folder(r"C:\_workspace\_python\2021-3Q\ai_server\iot\faces\training/", id)
+        video_name = glob.glob('./faces/training/*.mp4')[0].split('\\')[-1]  # training 폴더에 있는 jpg 파일명
+        train.move_file(video_name, id)
+        print("학습 시작")
+        if train.start_train() == 1:
+            print("학습 성공")
+            return JsonResponse({'result': 1})
+    try:
+        sio.connect(iotServer_url)
+    except Exception as e:  # Connection refused 처리
+        print(f"에러: {e}")
+    else:
+        sio.emit('start-stream')
+
+    # print(f"request body : {request.body}")
+    # request.raise_for_status()
+    # with open(f'faces/training/{id}.mp4', 'wb') as f:
+    #     for chunk in request.iter_content(chunk_size=8192):
+    #         f.write(chunk)
+
+    # print(request.method)
+    # print(request.FILES)
+    # train.create_folder(r"C:\_workspace\_python\2021-3Q\ai_server\iot\faces\training/", id)
+    # video_name = glob.glob('faces/training/*.mp4')[0].split('\\')[-1]  # training 폴더에 있는 mp4 파일명
+    # train.move_file(video_name, id)
+    # print("파일 이동 완료")
+    # print("학습 시작")
+    # if train.start() == "1":
+    #     print("학습 성공")
+    #     return JsonResponse({'state': 1})
+    # else:
+    #     print("학습 실패")
+    #     return JsonResponse({'state': 0})
+
+'''
 @csrf_exempt
 def add_face(request, id): # Web Server -> AI Server
     # request to iot server & save video
@@ -233,17 +282,16 @@ def add_face(request, id): # Web Server -> AI Server
     # else:
     #     print("학습 실패")
     #     return HttpResponse({'state': 0})
+'''
 
-
-
-@csrf_exempt
-def add_face(_, id):
-    with requests.post(iotServer_url + "request", stream=True) as r:
-        r.raise_for_status()
-        with open(f'faces/training/{id}.mp4', 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
-    return HttpResponse(1)
+# @csrf_exempt
+# def add_face(_, id):
+#     with requests.post(iotServer_url + "request", stream=True) as r:
+#         r.raise_for_status()
+#         with open(f'faces/training/{id}.mp4', 'wb') as f:
+#             for chunk in r.iter_content(chunk_size=8192):
+#                 f.write(chunk)
+#     return HttpResponse(1)
 
 
 

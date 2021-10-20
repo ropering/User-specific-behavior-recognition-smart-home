@@ -127,3 +127,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'faces/training/')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 15000000

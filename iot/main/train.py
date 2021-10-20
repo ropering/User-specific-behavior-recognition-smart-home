@@ -237,10 +237,13 @@ def start_train():
     with tf.Graph().as_default():
         with tf.Session() as sess:
             print("loading checkpoint ...")
+            # ckpt.meta : 체크포인트, 메타 그래프를 포함, 변수 값을 제외한 그래프의 구조를 담음
             saver = tf.train.import_meta_graph('../models/mfn/m1/mfn.ckpt.meta')
+            # 텐서플로우에서 학습된 모델의 구조를 제외한 변수들을 담고 있는 파일이다. 즉, 모델의 가중치만 담고있는 파일
             saver.restore(sess, '../models/mfn/m1/mfn.ckpt')
 
             images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
+            # 전처리된 얼굴로부터 얼굴 특징(임베딩)을 embeddings에 저장한다
             embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
             phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train:0")
             # images : 얼굴만 들어있는 이미지 목록
