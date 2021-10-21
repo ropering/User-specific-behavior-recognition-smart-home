@@ -5,9 +5,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/iot/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/iot/db.sqlite3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/iot/embeddings/embeddings.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/iot/embeddings/embeddings.pkl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot/iot/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/iot/iot/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot/main/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/iot/main/train.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot/main/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/iot/main/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iot/main/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/iot/main/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/iot/main/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/iot/main/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -207,7 +205,11 @@
       <workItem from="1634395103695" duration="7737000" />
       <workItem from="1634447760837" duration="19755000" />
       <workItem from="1634703149755" duration="14883000" />
-      <workItem from="1634725171780" duration="3923000" />
+      <workItem from="1634725171780" duration="5762000" />
+      <workItem from="1634775884145" duration="9264000" />
+      <workItem from="1634792181757" duration="399000" />
+      <workItem from="1634792696217" duration="4480000" />
+      <workItem from="1634803166138" duration="9281000" />
     </task>
     <servers />
   </component>

@@ -23,22 +23,24 @@ from django.shortcuts import redirect
 
 
 sio = socketio.Client()
+t = test.FaceRecognition()
 # variable to store images
 count = 1
 
-isa = False
-images = [] # store images for train
-size = ()
-webServer_url = "http://172.20.10.14:8080/ajax/FingerSendData/"
-iotServer_url = "http://172.20.10.11:3000/"
+isStreaming = True
+isTraining = True
+
+webServer_url = "http://172.20.10.14:8080/ajax/FingerSendData/" #"http://192.168.30.27:8080/ajax/FingerSendData/"
+iotServer_url = "http://172.20.10.11:3000" #"http://192.168.30.29:3000/"
 
 @sio.on('liveStream') # 'liveStream'이라고 오는 event message를 수신한다
 def message(data):
-    global isa
-    if isa == False:
-        isa = True
+    global isStreaming
+
+    if isStreaming : #and isTraining:
+        isStreaming = False
         # 얼굴인식 객체 생성
-        t = test.FaceRecognition()
+
         # try:
         #     buffer = data['buffer'] # base64 타입으로 변환된 이미지
         # except TypeError:
@@ -75,6 +77,7 @@ def message(data):
                 print(webServer_url)
                 try:
                     res = requests.post(webServer_url)
+                    # print(res.status_code)
                 except Exception as e:
                     print(f"ERROR: {e}")
                 # reset URL
@@ -91,7 +94,7 @@ def message(data):
                 # if str(finger_result) == '5':
                 #     sio.emit('offFinger', finger_result) #{'result': face_result}
         finally:
-            isa = False
+            isStreaming = True
     else:
         buffer = ""
 
@@ -217,25 +220,39 @@ else:
 def request_face(request, id):
     # print(f"request method : {request.method}")
     sio.disconnect()
+    global isTraining
+    isTraining = False
+    # sio.disconnect()
 
     if request.method == "POST":
         form = Video_form(data=200, files=request.FILES)
         # 영상 저장 → 영상 저장할 폴더 생성 → 영상 이동 → 학습 시작
         form.save()
         print("영상 저장 완료")
-        train.create_folder(r"C:\_workspace\_python\2021-3Q\ai_server\iot\faces\training/", id)
-        video_name = glob.glob('./faces/training/*.mp4')[0].split('\\')[-1]  # training 폴더에 있는 jpg 파일명
-        train.move_file(video_name, id)
+        # train.create_folder(r"C:\_workspace\_python\2021-3Q\ai_server\iot\faces\training/", id) # r"C:\_workspace\_python\2021-3Q\ai_server\iot\faces\training/", id
+        # print("폴더 생성")
+        # video_name = glob.glob('./faces/training/*.mp4')[0].split('\\')[-1]  # training 폴더에 있는 jpg 파일명
+        # train.move_file(video_name, id)
         print("학습 시작")
         if train.start_train() == 1:
             print("학습 성공")
+            try:
+                sio.connect(iotServer_url)
+            except Exception as e:  # Connection refused 처리
+                print(f"에러: {e}")
+            else:
+                sio.emit('start-stream')
             return JsonResponse({'result': 1})
-    try:
-        sio.connect(iotServer_url)
-    except Exception as e:  # Connection refused 처리
-        print(f"에러: {e}")
-    else:
-        sio.emit('start-stream')
+
+    isTraining = True
+    print(f"변경 완료 {isTraining}")
+
+    # try:
+    #     sio.connect(iotServer_url)
+    # except Exception as e:  # Connection refused 처리
+    #     print(f"에러: {e}")
+    # else:
+    #     sio.emit('start-stream')
 
     # print(f"request body : {request.body}")
     # request.raise_for_status()
@@ -327,7 +344,10 @@ def get_recognition(request):
             img_name = glob.glob('faces/training/*.jpg')[0].split('\\')[-1]  # training 폴더에 있는 jpg 파일명
 
             face_result = t.start_test(f"faces/training/{img_name}")
-            finger_result = FingerCounter.start_fingerRecognition(f"faces/training/{img_name}")
+            try:
+                finger_result = FingerCounter.start_fingerRecognition(f"faces/training/{img_name}")
+            except Exception as e:
+                print("오류")
 
             os.remove(f"faces/training/{img_name}")  # 인식에 활용한 영상 파일 삭제
             return JsonResponse({'face_result': face_result, 'finger_result': finger_result})
@@ -403,6 +423,7 @@ def upload(request, id):
 def face_train(request):
     # t = test.FaceRecognition()
     # train.move_file("nam.mp4", id="3")
+    print("학습 시작")
     return HttpResponse(train.start_train()) # return "학습 완료!"
     # train.start_train()
     # return HttpResponse(FingerCounter.start_fingerRecognition()) # 손가락 반환까지 3초 소요

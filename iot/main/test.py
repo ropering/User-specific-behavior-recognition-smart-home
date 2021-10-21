@@ -66,6 +66,9 @@ class FaceRecognition(object): # 싱글턴 패턴 적용
             return cls.instance
         # print("객체가 이미 존재합니다 이미 만들어진 객체를 반환합니다")
         else:
+            # load distance
+            with open("embeddings/embeddings.pkl", "rb") as f:  # 학습시 생성되는 모델
+                (cls.saved_embeds, cls.names) = pickle.load(f)
             return cls.instance
 
     def area_of(self, left_top, right_bottom):
