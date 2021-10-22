@@ -30,8 +30,8 @@ count = 1
 isStreaming = True
 isTraining = True
 
-webServer_url = "http://172.20.10.14:8080/ajax/FingerSendData/" #"http://192.168.30.27:8080/ajax/FingerSendData/"
-iotServer_url = "http://172.20.10.11:3000" #"http://192.168.30.29:3000/"
+webServer_url = "http://192.168.32.34:8080/ajax/FingerSendData/" #"http://192.168.30.27:8080/ajax/FingerSendData/" #"http://172.20.10.14:8080/ajax/FingerSendData/"
+iotServer_url = "http://192.168.43.242:3000/" #"http://192.168.30.29:3000/" # "http://172.20.10.11:3000/"
 
 @sio.on('liveStream') # 'liveStream'이라고 오는 event message를 수신한다
 def message(data):
@@ -65,9 +65,9 @@ def message(data):
             # start face recognition, hehavior recognition
             face_result = t.start_test(img)
             finger_result = FingerCounter.start_fingerRecognition(img)
-            print("="*10)
-            print(face_result)
-            print(finger_result)
+            # print("="*10)
+            # print(face_result)
+            # print(finger_result)
 
             # if face and behavior is recognized
             if face_result and finger_result:

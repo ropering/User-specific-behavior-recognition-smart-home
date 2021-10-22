@@ -3,9 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="2012562b-46ee-4c3e-a204-46ee4c503d69" name="Changes" comment=".">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/iot/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot/embeddings/embeddings.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/iot/embeddings/embeddings.pkl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot/main/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/iot/main/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/iot/main/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/iot/main/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -209,7 +206,7 @@
       <workItem from="1634775884145" duration="9264000" />
       <workItem from="1634792181757" duration="399000" />
       <workItem from="1634792696217" duration="4480000" />
-      <workItem from="1634803166138" duration="9281000" />
+      <workItem from="1634803166138" duration="18706000" />
     </task>
     <servers />
   </component>
