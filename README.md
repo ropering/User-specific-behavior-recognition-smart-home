@@ -17,7 +17,7 @@
         <th>개발인원</th>
         <th>팀 / 3명<br>
           (<a href="https://github.com/ropering">오명균</a>｜<a href="https://github.com/namyoungjun96">남영준</a>) <br>
-          (<a href="https://ad4613.tistory.com/">이윤영</a>)
+          (<a href="https://github.com/yunyoung-Lee/">이윤영</a>)
       </th>
     </tr>
       <tr>
