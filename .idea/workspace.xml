@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2012562b-46ee-4c3e-a204-46ee4c503d69" name="Changes" comment=".">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/iot/main/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/iot/main/views.py" afterDir="false" />
-    </list>
+    <list default="true" id="2012562b-46ee-4c3e-a204-46ee4c503d69" name="Changes" comment="." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -207,7 +204,7 @@
       <workItem from="1634792181757" duration="399000" />
       <workItem from="1634792696217" duration="4480000" />
       <workItem from="1634803166138" duration="19479000" />
-      <workItem from="1634949605021" duration="4286000" />
+      <workItem from="1634949605021" duration="4887000" />
     </task>
     <servers />
   </component>
