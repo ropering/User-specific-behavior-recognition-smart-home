@@ -2,8 +2,6 @@
 
 # 사용자별 행동 인식 스마트 홈
 
-
-
 ### 👋 Introduction
 
 <table>
@@ -42,10 +40,11 @@
     </tr>
     <tr>
         <th>사용기술</th>
-        <th colspan="3">
+        <th colspan="3" style="text-align:right;">
             <br> (Web 서버) MariaDB, API 통신 
             <br> (AI 서버) <br>
-                - 얼굴 탐지(Ultra light), 인식(MobileFaceNet) 행동인식(Mediapipe Hands) <br>
+                - 얼굴 탐지(Ultra light), 인식(MobileFaceNet) <br>
+                - 행동인식(Mediapipe Hands) <br>
                 - API 통신(Django)
                 - 실시간 스트리밍(Socket.IO)
             <br> (IoT 서버) 실시간 스트리밍(Socket.IO)
@@ -57,19 +56,28 @@
 <h3> 카메라와 인공지능 모델을 이용한 사용자 별 손동작 인식 스마트 홈 구축 </h3>
 
 ### 📆 일정
+![image10](https://user-images.githubusercontent.com/50795314/138651337-7bb06b7b-0150-43da-8f9f-7a74ba21e281.png)
 
 ### 📚 아키텍처 설계
+![image](https://user-images.githubusercontent.com/50795314/138651492-f9ca7953-9a3c-4129-9609-1702aa6b52e7.png)
 
 ### 📚 시스템 구조도
+![image](https://user-images.githubusercontent.com/50795314/138651894-63084a76-a73a-447c-b0a1-3f7778433d0f.png)
 
 ### 📚 DB 설계
+![image29](https://user-images.githubusercontent.com/50795314/138651766-5c228421-5a12-4e08-b86c-c87ee72e6918.png)
 
 ### 🖥️ 인공지능 모델
+![image](https://user-images.githubusercontent.com/50795314/138652222-59859d8c-e875-4d91-a555-9365683f1bc1.png)
+![image](https://user-images.githubusercontent.com/50795314/138652273-4bbd7475-eef7-4c60-bd9d-c654c1ed0ed2.png)
+![image](https://user-images.githubusercontent.com/50795314/138652291-3b977c45-6be7-4666-a08e-3bcbafe3b440.png)
+![image](https://user-images.githubusercontent.com/50795314/138652303-8b05814b-6efb-4e89-a889-704c26979511.png)
+![image](https://user-images.githubusercontent.com/50795314/138652334-f084b178-8361-4fc8-8451-1253de16e9a0.png)
 
 ### 📉 프로젝트 관리
+![image](https://user-images.githubusercontent.com/50795314/138652378-49346f68-1ad7-4bf1-a0bd-b347d4b73c63.png)
 
 ### 📑 Role & Member
-
 
 <table>
     <tr>
@@ -107,3 +115,5 @@
 
 ### 📽 시연 영상 
 
+[![시연영상](http://img.youtube.com/vi/-GmJ03eB_88/0.jpg)](https://youtu.be/-GmJ03eB_88?t=0s) 
+<br> https://youtu.be/-GmJ03eB_88
