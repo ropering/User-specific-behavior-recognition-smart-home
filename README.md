@@ -60,13 +60,13 @@
 ▶ 사용자가 간편하게 손동작 만으로 각종 전자기기를 제어할 수 있도록 하기 위함<br><br>
 
 ### 📡 구현 기술 <br>
-▶ (AI) 얼굴 탐지, 얼굴 인식 (Ultra light face generic face detector, MobileFaceNet, Mediapipe Hands) <br>
+▶ (AI) 얼굴 탐지, 얼굴 인식, 손가락 인식 <br> (Ultra light face generic face detector, MobileFaceNet, Mediapipe Hands) <br>
 ▶ (Server) 웹 서버 구축 (Django, Spring, Node.js) <br>
 ▶ 서버 간 REST API <br> <br>
 
 ### 🎫 구현 역할 <br>
 ▶ 웹 서버 구현 및 REST API 구현 (Django) <br>
-▶ 인공지능 모델링 (face detection, face recognition, finger detection) <br>
+▶ 인공지능 모델링 (face detection, face recognition, finger recognition) <br>
 ▶ 프로젝트 기획 및 프로그래밍 <br> <br>
 
 ### 🧧 관련 자료 <br>
