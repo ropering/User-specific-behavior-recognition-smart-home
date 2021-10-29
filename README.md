@@ -52,8 +52,27 @@
     </tr>
 </table>
 
-### 📼 Appearance
-<h3> 카메라와 인공지능 모델을 이용한 사용자 별 손동작 인식 스마트 홈 구축 </h3>
+### 📼 주제
+▶ 카메라와 인공지능 모델을 이용한 사용자 별 손동작 인식 스마트 홈 구축 
+
+### 🎈 구현 목적 <br>
+▶ 코로나 19로 집안에서의 생활시간 증가 및 스마트 홈 시장 규모 증가<br>
+▶ 사용자가 간편하게 손동작 만으로 각종 전자기기를 제어할 수 있도록 하기 위함<br><br>
+
+### 📡 구현 기술 <br>
+▶ (AI) 얼굴 탐지, 얼굴 인식 (Ultra light face generic face detector, MobileFaceNet, Mediapipe Hands) <br>
+▶ (Server) 웹 서버 구축 (Django, Spring, Node.js) <br>
+▶ 서버 간 REST API <br> <br>
+
+### 🎫 구현 역할 <br>
+▶ 웹 서버 구현 및 REST API 구현 (Django) <br>
+▶ 인공지능 모델링 (face detection, face recognition, finger detection) <br>
+▶ 프로젝트 기획 및 프로그래밍 <br> <br>
+
+### 🧧 관련 자료 <br>
+▶ https://github.com/ropering/User-specific-behavior-recognition-smart-home <br>
+▶ https://github.com/yunyoung-Lee/SpringWebServer <br>
+▶ https://github.com/namyoungjun96/IOTNodejs <br>
 
 ### 📆 일정
 ![image10](https://user-images.githubusercontent.com/50795314/138651337-7bb06b7b-0150-43da-8f9f-7a74ba21e281.png)
